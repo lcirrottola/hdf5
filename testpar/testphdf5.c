@@ -532,6 +532,14 @@ int main(int argc, char **argv)
     AddTest((mpi_size < 2)? "-fiodc" : "fiodc", file_image_daisy_chain_test, NULL,
             "file image ops daisy chain", NULL);
 
+    /* Atomicity operations are not supported for OpenMPI versions < major
+     * version 5 and will sporadically fail.
+     */
+#if defined(OPEN_MPI) && defined(OMPI_MAJOR_VERSION) && (OMPI_MAJOR_VERSION < 5)
+    if (MAINPROCESS)
+        printf("OpenMPI major version is < 5. Atomicity tests will be skipped due to support for atomicity "
+               "operations not being implemented.\n");
+#else
     if((mpi_size < 2)&& MAINPROCESS ) {
         HDprintf("Atomicity tests need at least 2 processes to participate\n");
         HDprintf("8 is more recommended.. Atomicity tests will be skipped \n");
@@ -543,6 +551,7 @@ int main(int argc, char **argv)
         AddTest("atomicity", dataset_atomicity, NULL,
                 "dataset atomic updates", PARATESTFILE);
     }
+#endif
 
     AddTest("denseattr", test_dense_attr, NULL,
             "Store Dense Attributes", PARATESTFILE);
